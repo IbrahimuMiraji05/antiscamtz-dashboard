@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AntiScamTZ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      width: 80%;
+      max-width: 400px;
+      font-size: 16px;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <h1>AntiScamTZ - Check Seller</h1>
+  <input type="text" id="phoneInput" placeholder="Enter phone number...">
+  <button onclick="checkSeller()">Check</button>
+
+  <div id="result" class="result" style="display:none;"></div>
+
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB843j_-N_LujIPIL5WArFbhHh014ix06M",
+      authDomain: "antiscamtz-8047d.firebaseapp.com",
+      projectId: "antiscamtz-8047d",
+      storageBucket: "antiscamtz-8047d.appspot.com",
+      messagingSenderId: "148664052437",
+      appId: "1:148664052437:web:0b2cc649a89bb3bbb6905c",
+      measurementId: "G-GHF1PYE9Y7",
+      databaseURL: "https://antiscamtz-8047d-default-rtdb.firebaseio.com"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    function checkSeller() {
+      const phone = document.getElementById("phoneInput").value.trim();
+      if (!phone) return alert("Please enter a phone number.");
+
+      const resultDiv = document.getElementById("result");
+      resultDiv.style.display = "block";
+      resultDiv.innerHTML = "Checking...";
+
+      database.ref("sellers").once("value", (snapshot) => {
+        let found = false;
+        snapshot.forEach(child => {
+          const data = child.val();
+          if (data.phone === phone) {
+            resultDiv.innerHTML = `
+              <h3>SCAMMER ALERT!</h3>
+              <p><strong>Name:</strong> ${data.name}</p>
+              <p><strong>Phone:</strong> ${data.phone}</p>
+              <p><strong>Reason:</strong> ${data.reason}</p>
+            `;
+            found = true;
+          }
+        });
+        if (!found) {
+          resultDiv.innerHTML = "<p>No scam report found for this number.</p>";
+        }
+      });
+    }
+  </script>
+</body>
+</html>

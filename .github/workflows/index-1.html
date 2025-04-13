@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AntiScamTZ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    input, textarea, button {
+      padding: 10px;
+      margin: 10px;
+      width: 80%;
+      max-width: 400px;
+      font-size: 16px;
+    }
+    .result, .form-section {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <h1>AntiScamTZ - Check Seller</h1>
+  <input type="text" id="phoneInput" placeholder="Enter phone number...">
+  <button onclick="checkSeller()">Check</button>
+  <div id="result" class="result" style="display:none;"></div>
+
+  <div class="form-section">
+    <h2>Report a Scammer</h2>
+    <input type="text" id="reportName" placeholder="Scammer Name" required>
+    <input type="text" id="reportPhone" placeholder="Phone Number" required>
+    <textarea id="reportReason" placeholder="Reason for report..." rows="4" required></textarea>
+    <button onclick="reportSeller()">Submit Report</button>
+    <div id="reportMsg"></div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB843j_-N_LujIPIL5WArFbhHh014ix06M",
+      authDomain: "antiscamtz-8047d.firebaseapp.com",
+      projectId: "antiscamtz-8047d",
+      storageBucket: "antiscamtz-8047d.appspot.com",
+      messagingSenderId: "148664052437",
+      appId: "1:148664052437:web:0b2cc649a89bb3bbb6905c",
+      measurementId: "G-GHF1PYE9Y7",
+      databaseURL: "https://antiscamtz-8047d-default-rtdb.firebaseio.com"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    function checkSeller() {
+      const phone = document.getElementById("phoneInput").value.trim();
+      if (!phone) return alert("Please enter a phone number.");
+
+      const resultDiv = document.getElementById("result");
+      resultDiv.style.display = "block";
+      resultDiv.innerHTML = "Checking...";
+
+      database.ref("sellers").once("value", (snapshot) => {
+        let found = false;
+        snapshot.forEach(child => {
+          const data = child.val();
+          if (data.phone === phone) {
+            resultDiv.innerHTML = `
+              <h3>SCAMMER ALERT!</h3>
+              <p><strong>Name:</strong> ${data.name}</p>
+              <p><strong>Phone:</strong> ${data.phone}</p>
+              <p><strong>Reason:</strong> ${data.reason}</p>
+            `;
+            found = true;
+          }
+        });
+        if (!found) {
+          resultDiv.innerHTML = "<p>No scam report found for this number.</p>";
+        }
+      });
+    }
+
+    function reportSeller() {
+      const name = document.getElementById("reportName").value.trim();
+      const phone = document.getElementById("reportPhone").value.trim();
+      const reason = document.getElementById("reportReason").value.trim();
+      const msgDiv = document.getElementById("reportMsg");
+
+      if (!name || !phone || !reason) {
+        msgDiv.innerText = "Please fill in all fields.";
+        return;
+      }
+
+      const newRef = database.ref("sellers").push();
+      newRef.set({ name, phone, reason }, (error) => {
+        if (error) {
+          msgDiv.innerText = "Failed to submit report.";
+        } else {
+          msgDiv.innerText = "Scammer reported successfully!";
+          document.getElementById("reportName").value = "";
+          document.getElementById("reportPhone").value = "";
+          document.getElementById("reportReason").value = "";
+        }
+      });
+    }
+  </script>
+</body>
+</html>
