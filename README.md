@@ -1,2 +1,0 @@
-# antiscamtz-dashboard
-AntiScamTZ 
